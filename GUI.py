@@ -76,6 +76,7 @@ import pyqtgraph as pg
 
 
 display_num = 0
+plot_num = list()
 
 # Main GUI that has buttons that connect to other functions
 class MainWindow(QWidget):
@@ -192,6 +193,7 @@ class Plot_Window(QtWidgets.QMainWindow):
         self.pController = Plot_Controller()
         self.pController.show()
 
+# controller window that opens alongside plots
 class Plot_Controller(QWidget):
     def __init__(self):
         super(Plot_Controller,self).__init__()
@@ -199,10 +201,82 @@ class Plot_Controller(QWidget):
 
     def show_pController(self):
         QWidget.__init__(self)
+        global plot_num
         self.setGeometry(900, 300, 350, 350)
         self.setWindowTitle('Plot controller title check')
+
+        layout = QGridLayout()
+
+        QToolTip.setFont(QFont('SansSerif', 10))
+
+
+        # line input that only allows for integer inputs 
+        self.line_edit = QLineEdit() 
+        self.onlyInt = QIntValidator()
+        self.line_edit.setValidator(self.onlyInt)
+        self.line_edit.setToolTip('Input number you want to start incrementor at')
+        layout.addWidget(self.line_edit)
         
+        # pushbutton to save number typed into line
+        self.lbtn = QPushButton('save inputed number', self)
+        self.lbtn.clicked.connect(self.on_click_input)
+        layout.addWidget(self.lbtn)  
+
+        # pushbutton that shows what our values for our plot is
+        self.vbtn = QPushButton('preview inputed values', self)
+        self.vbtn.clicked.connect(self.show_preview)
+        layout.addWidget(self.vbtn)
+
+        # set all the buttons in a nice layout
+        self.setLayout(layout)
+
+    # function that takes in the line input
+    def on_click_input(self):
+        global plot_num
+        # case where nothing is typed into the line but user still presses the button
+        if (self.line_edit.text() == ''):
+            plot_num.append(0)
+            print(plot_num)
+        # case where user does type store the number
+        else:
+            plot_num.append(int(self.line_edit.text()))
+            print(plot_num)
+
+    def show_preview(self):
+        self.preview_Controller = Preview_Window()
+        self.preview_Controller.show()
+
+class Preview_Window(QWidget):
+    def __init__(self):
+        super(Preview_Window,self).__init__()
+        self.show_Preview()
     
+    def show_Preview(self):
+        QWidget.__init__(self)
+        global plot_num
+        
+        self.setGeometry(900, 300, 350, 350)
+        self.setWindowTitle('Current input values')
+
+        layout = QVBoxLayout()
+        self.list_label = QLabel(self)
+        self.list_label.setText(str(plot_num))
+
+        # refreshbtn that refreshes the onscreen number in the case where a user inputs another number into the line
+        self.refreshbtn = QPushButton('refresh display number',self)
+        self.refreshbtn.clicked.connect(lambda: self.on_click_refresh())
+        self.refreshbtn.resize(self.refreshbtn.sizeHint())
+        layout.addWidget(self.refreshbtn)
+
+        self.setLayout(layout)
+
+    @pyqtSlot()
+    def on_click_refresh(self):
+        global plot_num
+        self.list_label.setText(str(plot_num))
+        self.list_label.adjustSize()
+        
+          
 # Incrementor window class that allows the user to increment a number on the screen and then another button that
 # saves the number into a seperate txt file
 class Incrementor(QWidget):
