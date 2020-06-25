@@ -6,12 +6,19 @@
 
 #    Written by: Ricky Au
 # ---------------------------------------------------------------------------------
+#    Version:    9 - June 26, 2020
+#    By:         Ricky Au
+#    Notes:      Added ability for user to build graph with line inputs
+#                Added button for user to see their inputed values
+#                Added button that allows user to refresh preview screen
+#                Added button that allows user to create graph out of inputed values 
+# 
+# ---------------------------------------------------------------------------------
 #    Version:    8 - June 19, 2020
 #    By:         Ricky Au
 #    Notes:      Added plot button not time scaled yet
 #                Added a random plot just to test functionality
-#                Added a controller window when plot activated that will control plot (Work in progress)
-#                
+#                Added a controller window when plot activated that will control plot (Work in progress)                
 #   
 # ---------------------------------------------------------------------------------
 #    Version:    7.5 - June 12, 2020
@@ -77,7 +84,7 @@ import pyqtgraph as pg
 
 display_num = 0
 plot_num = list()
-
+plot_x_axis = list()
 # Main GUI that has buttons that connect to other functions
 class MainWindow(QWidget):
 
@@ -170,28 +177,9 @@ class MainWindow(QWidget):
             event.ignore()
     
     def show_plot(self):
-        self.pWindow = Plot_Window()
-        self.pWindow.show()
-
-class Plot_Window(QtWidgets.QMainWindow):
-    def __init__(self, *args, **kwargs):
-        super(Plot_Window,self).__init__(*args, **kwargs)
-        self.show_plot_window()
-        self.show_plot_controller()
-    
-    def show_plot_window(self):
-        self.graphWidget = pg.PlotWidget()
-        self.setCentralWidget(self.graphWidget)
-
-        x = [1,2,3,4,5,6,7,8,9,10]
-        y = [30,32,34,32,33,31,29,32,35,45]
-
-        # plot data: x,y values
-        self.graphWidget.plot(x, y)
-    
-    def show_plot_controller(self):
         self.pController = Plot_Controller()
         self.pController.show()
+
 
 # controller window that opens alongside plots
 class Plot_Controller(QWidget):
@@ -246,6 +234,7 @@ class Plot_Controller(QWidget):
         self.preview_Controller = Preview_Window()
         self.preview_Controller.show()
 
+# Preview window that lets user see what they have inputed in the line inputs
 class Preview_Window(QWidget):
     def __init__(self):
         super(Preview_Window,self).__init__()
@@ -255,7 +244,7 @@ class Preview_Window(QWidget):
         QWidget.__init__(self)
         global plot_num
         
-        self.setGeometry(900, 300, 350, 350)
+        self.setGeometry(1400, 300, 350, 350)
         self.setWindowTitle('Current input values')
 
         layout = QVBoxLayout()
@@ -268,14 +257,53 @@ class Preview_Window(QWidget):
         self.refreshbtn.resize(self.refreshbtn.sizeHint())
         layout.addWidget(self.refreshbtn)
 
+        # graph btn that graphs the inputed numbers
+        self.graphbtn = QPushButton('graph current inputed numbers', self)
+        self.graphbtn.clicked.connect(lambda: self.on_click_graph())
+        self.graphbtn.resize(self.graphbtn.sizeHint())
+        layout.addWidget(self.graphbtn)
+
         self.setLayout(layout)
 
+    # function that refreshes the screen if another input is added while preview window open
     @pyqtSlot()
     def on_click_refresh(self):
         global plot_num
         self.list_label.setText(str(plot_num))
         self.list_label.adjustSize()
         
+    @pyqtSlot()
+    def on_click_graph(self):
+        global plot_num
+        global plot_x_axis
+
+        # try making graph does nothing if no values inputed
+        if not plot_num:
+            print("empty list")
+        else:
+            # start by building the x axis for graph
+            for i in range(len(plot_num)):
+                plot_x_axis.append(i+1)
+            print(plot_x_axis)
+            print(plot_num)
+            self.pWindow = Plot_Window()
+            self.pWindow.show()
+
+# class that plots the graph
+class Plot_Window(QtWidgets.QMainWindow):
+    def __init__(self, *args, **kwargs):
+        super(Plot_Window,self).__init__(*args, **kwargs)
+        self.show_plot_window()
+    
+    def show_plot_window(self):
+        global plot_num
+        global plot_x_axis
+        self.graphWidget = pg.PlotWidget()
+        self.setCentralWidget(self.graphWidget)
+
+        # plot data: x,y values,circles for points
+        self.graphWidget.plot(plot_x_axis, plot_num, symbol='o')
+
           
 # Incrementor window class that allows the user to increment a number on the screen and then another button that
 # saves the number into a seperate txt file
