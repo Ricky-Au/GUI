@@ -281,6 +281,8 @@ class Preview_Window(QWidget):
         if not plot_num:
             print("empty list")
         else:
+            # reset the x axis incase user wants to open another graph
+            plot_x_axis = list()
             # start by building the x axis for graph
             for i in range(len(plot_num)):
                 plot_x_axis.append(i+1)
