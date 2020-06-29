@@ -6,6 +6,11 @@
 
 #    Written by: Ricky Au
 # ---------------------------------------------------------------------------------
+#    Version:    10 - 
+#    By:         Ricky Au
+#    Notes:      Real time plot 
+#               
+# ---------------------------------------------------------------------------------
 #    Version:    9 - June 26, 2020
 #    By:         Ricky Au
 #    Notes:      Added ability for user to build graph with line inputs
@@ -85,6 +90,7 @@ import pyqtgraph as pg
 display_num = 0
 plot_num = list()
 plot_x_axis = list()
+x_axis = 0
 # Main GUI that has buttons that connect to other functions
 class MainWindow(QWidget):
 
@@ -221,6 +227,8 @@ class Plot_Controller(QWidget):
     # function that takes in the line input
     def on_click_input(self):
         global plot_num
+        global plot_x_axis
+        global x_axis
         # case where nothing is typed into the line but user still presses the button
         if (self.line_edit.text() == ''):
             plot_num.append(0)
@@ -229,6 +237,8 @@ class Plot_Controller(QWidget):
         else:
             plot_num.append(int(self.line_edit.text()))
             print(plot_num)
+        plot_x_axis.append(x_axis)
+        x_axis = x_axis + 1
 
     def show_preview(self):
         self.preview_Controller = Preview_Window()
@@ -280,6 +290,8 @@ class Preview_Window(QWidget):
         # try making graph does nothing if no values inputed
         if not plot_num:
             print("empty list")
+            self.pWindow = Plot_Window()
+            self.pWindow.show()
         else:
             # reset the x axis incase user wants to open another graph
             plot_x_axis = list()
@@ -300,13 +312,19 @@ class Plot_Window(QtWidgets.QMainWindow):
     def show_plot_window(self):
         global plot_num
         global plot_x_axis
-        self.graphWidget = pg.PlotWidget()
+        # self.graphWidget = pg.PlotWidget()
+        self.graphWidget = pg.plot()
         self.setCentralWidget(self.graphWidget)
 
         # plot data: x,y values,circles for points
-        self.graphWidget.plot(plot_x_axis, plot_num, symbol='o')
+        # this plots a graph all at once we want real time
+        # self.graphWidget.plot(plot_x_axis, plot_num, symbol='o')
 
-          
+        while True:
+            # if no inputs yet 
+            if plot_num:
+                self.graphWidget.plot(plot_x_axis[-1], plot_num[-1], symbol='o', clear = True)
+            pg.QtGui.QApplication.processEvents()
 # Incrementor window class that allows the user to increment a number on the screen and then another button that
 # saves the number into a seperate txt file
 class Incrementor(QWidget):
