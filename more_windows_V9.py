@@ -3,7 +3,14 @@
 # 
 # A script to save data created from the program sending the data to text file 
 # and test the functionality of multiple different windows under one main gui.
-
+# 
+# ---------------------------------------------------------------------------------
+# BEFORE YOU RUN:
+# python3 -m pip install matplotlib
+# python3 -m pip install PyQt5
+# python3 -m pip install pyqtgraph
+# 
+# ---------------------------------------------------------------------------------
 #    Written by: Ricky Au
 # ---------------------------------------------------------------------------------
 #    Version:    9 - June 26, 2020

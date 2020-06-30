@@ -3,7 +3,14 @@
 # 
 # A script to save data created from the program sending the data to text file 
 # and test the functionality of multiple different windows under one main gui.
-
+# 
+# ---------------------------------------------------------------------------------
+# BEFORE YOU RUN:
+# python3 -m pip install matplotlib
+# python3 -m pip install PyQt5
+# python3 -m pip install pyqtgraph
+# 
+# ---------------------------------------------------------------------------------
 #    Written by: Ricky Au
 # ---------------------------------------------------------------------------------
 #    Version:    10 - 
@@ -75,9 +82,12 @@
 #                Which increments the number when user presses the button
 #                
 # ---------------------------------------------------------------------------------
+# for plot window (future has to be at front)
+from __future__ import annotations
+
 
 # import system and regex 
-import sys, re, optparse
+import sys, re, optparse, os
 # this import seems redundent but without the graph plot won't execute properly
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QWidget, QPushButton, QApplication, QVBoxLayout, QLabel, QGridLayout, QLineEdit, QMessageBox, QToolTip
@@ -86,6 +96,14 @@ from PyQt5.QtGui import QIntValidator, QFont
 from pyqtgraph import PlotWidget, plot
 import pyqtgraph as pg
 
+# for plot window 
+from typing import *
+from matplotlib.backends.qt_compat import QtCore, QtWidgets
+from matplotlib.backends.backend_qt5agg import FigureCanvas
+import matplotlib as mpl
+import matplotlib.figure as mpl_fig
+import matplotlib.animation as anim
+import numpy as np
 
 display_num = 0
 plot_num = list()
@@ -305,26 +323,82 @@ class Preview_Window(QWidget):
 
 # class that plots the graph
 class Plot_Window(QtWidgets.QMainWindow):
-    def __init__(self, *args, **kwargs):
-        super(Plot_Window,self).__init__(*args, **kwargs)
+    def __init__(self):
+        super(Plot_Window,self).__init__()
         self.show_plot_window()
     
     def show_plot_window(self):
-        global plot_num
-        global plot_x_axis
-        # self.graphWidget = pg.PlotWidget()
-        self.graphWidget = pg.plot()
-        self.setCentralWidget(self.graphWidget)
+        # global plot_num
+        # global plot_x_axis
+        # 1. Window settings
+        self.setGeometry(300, 300, 800, 400)
+        self.setWindowTitle("Matplotlib live plot in PyQt - example 1")
+        self.frm = QtWidgets.QFrame(self)
+        self.frm.setStyleSheet("QWidget { background-color: #eeeeec; }")
+        self.lyt = QtWidgets.QVBoxLayout()
+        self.frm.setLayout(self.lyt)
+        self.setCentralWidget(self.frm)
 
-        # plot data: x,y values,circles for points
-        # this plots a graph all at once we want real time
-        # self.graphWidget.plot(plot_x_axis, plot_num, symbol='o')
+        # 2. Place the matplotlib figure
+        self.myFig = MyFigureCanvas(x_len=200, y_range=[0, 100], interval=20)
+        self.lyt.addWidget(self.myFig)
 
-        while True:
-            # if no inputs yet 
-            if plot_num:
-                self.graphWidget.plot(plot_x_axis[-1], plot_num[-1], symbol='o', clear = True)
-            pg.QtGui.QApplication.processEvents()
+        # 3. Show
+        self.show()
+
+
+class MyFigureCanvas(FigureCanvas, anim.FuncAnimation):
+    '''
+    This is the FigureCanvas in which the live plot is drawn.
+
+    '''
+    def __init__(self, x_len:int, y_range:List, interval:int) -> None:
+        '''
+        :param x_len:       The nr of data points shown in one plot.
+        :param y_range:     Range on y-axis.
+        :param interval:    Get a new datapoint every .. milliseconds.
+
+        '''
+        FigureCanvas.__init__(self, mpl_fig.Figure())
+        # Range settings
+        self._x_len_ = x_len
+        self._y_range_ = y_range
+
+        # Store two lists _x_ and _y_
+        x = list(range(0, x_len))
+        y = [0] * x_len
+
+        # Store a figure and ax
+        self._ax_  = self.figure.subplots()
+        self._ax_.set_ylim(ymin=self._y_range_[0], ymax=self._y_range_[1])
+        self._line_, = self._ax_.plot(x, y)
+
+        # Call superclass constructors
+        anim.FuncAnimation.__init__(self, self.figure, self._update_canvas_, fargs=(y,), interval=interval, blit=True)
+        return
+
+    def _update_canvas_(self, i, y) -> None:
+        '''
+        This function gets called regularly by the timer.
+
+        '''
+        y.append(round(get_next_datapoint(), 2))     # Add new datapoint
+        y = y[-self._x_len_:]                        # Truncate list _y_
+        self._line_.set_ydata(y)
+        return self._line_,
+
+# Data source
+# ------------
+n = np.linspace(0, 499, 500)
+d = 50 + 25 * (np.sin(n / 8.3)) + 10 * (np.sin(n / 7.5)) - 5 * (np.sin(n / 1.5))
+i = 0
+def get_next_datapoint():
+    global i
+    i += 1
+    if i > 499:
+        i = 0
+    return d[i]
+
 # Incrementor window class that allows the user to increment a number on the screen and then another button that
 # saves the number into a seperate txt file
 class Incrementor(QWidget):
