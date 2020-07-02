@@ -13,17 +13,10 @@
 # ---------------------------------------------------------------------------------
 #    Written by: Ricky Au
 # ---------------------------------------------------------------------------------
-#    Version:    10 - July 2, 2020
-#    By:         Ricky Au
-#    Notes:      Added Real time plot with user inputs
-#    Sources:    https://stackoverflow.com/questions/57891219/how-to-make-a-fast-matplotlib-live-plot-in-a-pyqt5-gui
-#                Example 2 of link
-# 
-# ---------------------------------------------------------------------------------
 #    Version:    9.5 - June 30, 2020
 #    By:         Ricky Au
-#    Notes:      infinite scrolling plot added(just random plot that scrolls)
-#                
+#    Notes:      infinite scrolling plot added
+#               
 # ---------------------------------------------------------------------------------
 #    Version:    9 - June 26, 2020
 #    By:         Ricky Au
@@ -89,9 +82,9 @@
 #                Which increments the number when user presses the button
 #                
 # ---------------------------------------------------------------------------------
-
 # for plot window (future has to be at front)
 from __future__ import annotations
+
 
 # import system and regex 
 import sys, re, optparse, os
@@ -110,14 +103,12 @@ from matplotlib.backends.backend_qt5agg import FigureCanvas
 import matplotlib as mpl
 import matplotlib.figure as mpl_fig
 import matplotlib.animation as anim
+import numpy as np
 
 display_num = 0
 plot_num = list()
 plot_x_axis = list()
 x_axis = 0
-plot_val = None
-
-
 # Main GUI that has buttons that connect to other functions
 class MainWindow(QWidget):
 
@@ -256,18 +247,14 @@ class Plot_Controller(QWidget):
         global plot_num
         global plot_x_axis
         global x_axis
-        global plot_val
         # case where nothing is typed into the line but user still presses the button
         if (self.line_edit.text() == ''):
             plot_num.append(0)
             print(plot_num)
-
         # case where user does type store the number
         else:
             plot_num.append(int(self.line_edit.text()))
             print(plot_num)
-            plot_val = int(self.line_edit.text())
-        # update x axis list
         plot_x_axis.append(x_axis)
         x_axis = x_axis + 1
 
@@ -315,9 +302,25 @@ class Preview_Window(QWidget):
         
     @pyqtSlot()
     def on_click_graph(self):
+        global plot_num
+        global plot_x_axis
 
-        self.pWindow = Plot_Window()
-        self.pWindow.show()
+        # try making graph does nothing if no values inputed
+        if not plot_num:
+            print("empty list")
+            self.pWindow = Plot_Window()
+            self.pWindow.show()
+        else:
+            # reset the x axis incase user wants to open another graph
+            plot_x_axis = list()
+            # start by building the x axis for graph
+            for i in range(len(plot_num)):
+                plot_x_axis.append(i+1)
+            print(plot_x_axis)
+            print(plot_num)
+            self.pWindow = Plot_Window()
+            self.pWindow.show()
+
 # class that plots the graph
 class Plot_Window(QtWidgets.QMainWindow):
     def __init__(self):
@@ -325,9 +328,11 @@ class Plot_Window(QtWidgets.QMainWindow):
         self.show_plot_window()
     
     def show_plot_window(self):
+        # global plot_num
+        # global plot_x_axis
         # 1. Window settings
         self.setGeometry(300, 300, 800, 400)
-        self.setWindowTitle("live plot test")
+        self.setWindowTitle("Matplotlib live plot in PyQt - example 1")
         self.frm = QtWidgets.QFrame(self)
         self.frm.setStyleSheet("QWidget { background-color: #eeeeec; }")
         self.lyt = QtWidgets.QVBoxLayout()
@@ -335,13 +340,13 @@ class Plot_Window(QtWidgets.QMainWindow):
         self.setCentralWidget(self.frm)
 
         # 2. Place the matplotlib figure
-        self.myFig = MyFigureCanvas(x_len=60, y_range=[0, 100], interval=1000)
+        self.myFig = MyFigureCanvas(x_len=200, y_range=[0, 100], interval=20)
         self.lyt.addWidget(self.myFig)
 
-        # 3. Show the graph window
+        # 3. Show
         self.show()
 
-# refer to source in Notes of Version 10
+
 class MyFigureCanvas(FigureCanvas, anim.FuncAnimation):
     '''
     This is the FigureCanvas in which the live plot is drawn.
@@ -354,8 +359,6 @@ class MyFigureCanvas(FigureCanvas, anim.FuncAnimation):
         :param interval:    Get a new datapoint every .. milliseconds.
 
         '''
-        global plot_num
-        
         FigureCanvas.__init__(self, mpl_fig.Figure())
         # Range settings
         self._x_len_ = x_len
@@ -367,11 +370,7 @@ class MyFigureCanvas(FigureCanvas, anim.FuncAnimation):
 
         # Store a figure and ax
         self._ax_  = self.figure.subplots()
-
-        # self._ax_.set_xlim(xmin=-60, xmax=0) # this changes the x axis numbers but it sets actual limits on the x axis
         self._ax_.set_ylim(ymin=self._y_range_[0], ymax=self._y_range_[1])
-        self._ax_.set_xlabel('time (s)')
-        self._ax_.set_ylabel('values (int)')
         self._line_, = self._ax_.plot(x, y)
 
         # Call superclass constructors
@@ -383,20 +382,22 @@ class MyFigureCanvas(FigureCanvas, anim.FuncAnimation):
         This function gets called regularly by the timer.
 
         '''
-        y.append(round(self.get_next_datapoint(), 2))     # Add new datapoint
-        y = y[-self._x_len_:]                        # Truncate list _y_ (get last element and push to left)
+        y.append(round(get_next_datapoint(), 2))     # Add new datapoint
+        y = y[-self._x_len_:]                        # Truncate list _y_
         self._line_.set_ydata(y)
         return self._line_,
-    
-    def get_next_datapoint(self):
-        global plot_val
-        # if nothing is inputed set graph to display 0
-        if (plot_val == None):
-            val = 0
-        else:
-            val = plot_val
-            plot_val = None
-        return val
+
+# Data source
+# ------------
+n = np.linspace(0, 499, 500)
+d = 50 + 25 * (np.sin(n / 8.3)) + 10 * (np.sin(n / 7.5)) - 5 * (np.sin(n / 1.5))
+i = 0
+def get_next_datapoint():
+    global i
+    i += 1
+    if i > 499:
+        i = 0
+    return d[i]
 
 # Incrementor window class that allows the user to increment a number on the screen and then another button that
 # saves the number into a seperate txt file
