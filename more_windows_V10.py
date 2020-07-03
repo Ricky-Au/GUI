@@ -248,11 +248,6 @@ class Plot_Controller(QWidget):
         self.lbtn.clicked.connect(self.on_click_input)
         layout.addWidget(self.lbtn)  
 
-        # # pushbutton that shows what our values for our plot is
-        # self.vbtn = QPushButton('preview inputed values', self)
-        # self.vbtn.clicked.connect(self.show_preview)
-        # layout.addWidget(self.vbtn)
-
         # set all the buttons in a nice layout
         self.setLayout(layout)
 
@@ -280,54 +275,6 @@ class Plot_Controller(QWidget):
     def show_plot_window(self):
         self.pWindow = Plot_Window()
         self.pWindow.show()
-
-    # def show_preview(self):
-    #     self.preview_Controller = Preview_Window()
-    #     self.preview_Controller.show()
-
-# # Preview window that lets user see what they have inputed in the line inputs
-# class Preview_Window(QWidget):
-#     def __init__(self):
-#         super(Preview_Window,self).__init__()
-#         self.show_Preview()
-    
-#     def show_Preview(self):
-#         QWidget.__init__(self)
-#         global plot_num
-        
-#         self.setGeometry(1400, 300, 350, 350)
-#         self.setWindowTitle('Current input values')
-
-#         layout = QVBoxLayout()
-#         self.list_label = QLabel(self)
-#         self.list_label.setText(str(plot_num))
-
-#         # refreshbtn that refreshes the onscreen number in the case where a user inputs another number into the line
-#         self.refreshbtn = QPushButton('refresh display number',self)
-#         self.refreshbtn.clicked.connect(lambda: self.on_click_refresh())
-#         self.refreshbtn.resize(self.refreshbtn.sizeHint())
-#         layout.addWidget(self.refreshbtn)
-
-#         # graph btn that graphs the inputed numbers
-#         self.graphbtn = QPushButton('graph current inputed numbers', self)
-#         self.graphbtn.clicked.connect(lambda: self.on_click_graph())
-#         self.graphbtn.resize(self.graphbtn.sizeHint())
-#         layout.addWidget(self.graphbtn)
-
-#         self.setLayout(layout)
-
-#     # function that refreshes the screen if another input is added while preview window open
-#     @pyqtSlot()
-#     def on_click_refresh(self):
-#         global plot_num
-#         self.list_label.setText(str(plot_num))
-#         self.list_label.adjustSize()
-        
-#     @pyqtSlot()
-#     def on_click_graph(self):
-
-#         self.pWindow = Plot_Window()
-#         self.pWindow.show()
 
 # class that plots the graph
 class Plot_Window(QtWidgets.QMainWindow):
