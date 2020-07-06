@@ -15,13 +15,6 @@
 # ---------------------------------------------------------------------------------
 #    Written by: Ricky Au
 # ---------------------------------------------------------------------------------
-#    Version:    - 
-#    By:         Ricky Au
-#    Notes:      Fixed X-axis of graph to show correct time intervals
-#                
-#    
-# 
-# ---------------------------------------------------------------------------------
 #    Version:    10 - July 3, 2020
 #    By:         Ricky Au
 #    Notes:      Added Real time plot with user inputs
@@ -354,7 +347,7 @@ class Plot_Window(QtWidgets.QMainWindow):
         self.setCentralWidget(self.frm)
 
         # 2. Place the matplotlib figure
-        self.myFig = MyFigureCanvas(x_range=[-59,1], y_range=[0, 100], interval=1000)
+        self.myFig = MyFigureCanvas(x_len=60, y_range=[0, 100], interval=1000)
         self.lyt.addWidget(self.myFig)
 
         # 3. Show the graph window
@@ -366,7 +359,7 @@ class MyFigureCanvas(FigureCanvas, anim.FuncAnimation):
     This is the FigureCanvas in which the live plot is drawn.
 
     '''
-    def __init__(self, x_range:List, y_range:List, interval:int) -> None:
+    def __init__(self, x_len:int, y_range:List, interval:int) -> None:
         '''
         :param x_len:       The nr of data points shown in one plot.
         :param y_range:     Range on y-axis.
@@ -377,13 +370,12 @@ class MyFigureCanvas(FigureCanvas, anim.FuncAnimation):
         
         FigureCanvas.__init__(self, mpl_fig.Figure())
         # Range settings
-        x_len = 60
         self._x_len_ = x_len
         print(self._x_len_)
         self._y_range_ = y_range
 
         # Store two lists _x_ and _y_
-        x = list(range(x_range[0],x_range[1]))
+        x = list(range(0, x_len))
         print(x)
         # x = np.array([-60,-55,-50,-45,-40,-35,-30,-25,-20,-15,-10,-5,0]) # trying to set x axis but get error "ValueError: x and y must have same first dimension, but have shapes (13,) and (60,)"
         # y = np.array([0] * x)
