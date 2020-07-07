@@ -113,6 +113,7 @@ from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QIntValidator, QFont
 from pyqtgraph import PlotWidget, plot
 import pyqtgraph as pg
+import datetime
 
 # for plot window 
 from typing import *
@@ -125,8 +126,7 @@ import matplotlib.animation as anim
 
 display_num = 0
 plot_num = list()
-plot_x_axis = list()
-x_axis = 0
+time_of_input = list()
 plot_val = None
 
 
@@ -235,7 +235,6 @@ class Plot_Controller(QWidget):
 
     def show_pController(self):
         QWidget.__init__(self)
-        global plot_num
         self.setGeometry(700, 300, 350, 350)
         self.setWindowTitle('Plot controller title check')
 
@@ -256,6 +255,10 @@ class Plot_Controller(QWidget):
         self.lbtn.clicked.connect(self.on_click_input)
         layout.addWidget(self.lbtn)  
 
+        self.textfilebtn = QPushButton('make text file of inputs', self)
+        self.textfilebtn.clicked.connect(lambda: self.on_click_new_txt_file())
+        layout.addWidget(self.textfilebtn)
+
         # # pushbutton that shows what our values for our plot is
         # self.vbtn = QPushButton('preview inputed values', self)
         # self.vbtn.clicked.connect(self.show_preview)
@@ -267,27 +270,38 @@ class Plot_Controller(QWidget):
     # function that takes in the line input
     def on_click_input(self):
         global plot_num
-        global plot_x_axis
-        global x_axis
         global plot_val
+        global time_of_input
+
+        current_time = datetime.datetime.now()
+        print(current_time)
+        time_of_input.append(current_time)
+        print(time_of_input)
         # case where nothing is typed into the line but user still presses the button
         # treat as if user types 0
         if (self.line_edit.text() == ''):
             plot_num.append(0)
             print(plot_num)
-
+            plot_val = int(self.line_edit.text())
         # case where user does type store the number
         else:
             plot_num.append(int(self.line_edit.text()))
             print(plot_num)
             plot_val = int(self.line_edit.text())
-        # update x axis list
-        plot_x_axis.append(x_axis)
-        x_axis = x_axis + 1
     
     def show_plot_window(self):
         self.pWindow = Plot_Window()
         self.pWindow.show()
+
+    @pyqtSlot()
+    def on_click_new_txt_file(self):
+        global plot_num
+        global time_of_input
+        file = open("graph_inputs.txt", "w")
+        for value,time in zip(plot_num,time_of_input):
+            file.write("%s  %s \n" % (value,time))
+        print("graph input file made")
+        file.close()
 
     # def show_preview(self):
     #     self.preview_Controller = Preview_Window()
@@ -384,11 +398,9 @@ class MyFigureCanvas(FigureCanvas, anim.FuncAnimation):
 
         # Store two lists _x_ and _y_
         x = list(range(x_range[0],x_range[1]))
-        print(x)
         # x = np.array([-60,-55,-50,-45,-40,-35,-30,-25,-20,-15,-10,-5,0]) # trying to set x axis but get error "ValueError: x and y must have same first dimension, but have shapes (13,) and (60,)"
         # y = np.array([0] * x)
         y = [0] * x_len
-        print(y)
 
         # Store a figure and ax
         self._ax_  = self.figure.subplots()
