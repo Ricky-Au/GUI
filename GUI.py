@@ -15,11 +15,10 @@
 # ---------------------------------------------------------------------------------
 #    Written by: Ricky Au
 # ---------------------------------------------------------------------------------
-#    Version:    - 
+#    Version:    11 - July 10, 2020
 #    By:         Ricky Au
 #    Notes:      Fixed X-axis of graph to show correct time intervals
-#                
-#    
+#                Added save graph inputs to text file button.
 # 
 # ---------------------------------------------------------------------------------
 #    Version:    10 - July 3, 2020
