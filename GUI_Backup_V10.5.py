@@ -116,14 +116,12 @@ import datetime
 
 # for plot window 
 from typing import *
-from numpy import *
 from matplotlib.backends.qt_compat import QtCore, QtWidgets
 from matplotlib.backends.backend_qt5agg import FigureCanvas
 import matplotlib as mpl
 import matplotlib.figure as mpl_fig
 import matplotlib.animation as anim
 # import numpy as np
-import math
 
 display_num = 0
 plot_num = list()
@@ -371,10 +369,6 @@ class Plot_Window(QtWidgets.QMainWindow):
         # 2. Place the matplotlib figure
         self.myFig = MyFigureCanvas(x_range=[-59,1], y_range=[0, 100], interval=1000)
         self.lyt.addWidget(self.myFig)
-
-        t = linspace(0, 2*math.pi, 400)
-        a = sin(t)
-        self.mpl.plot(t, a, 'r') # plotting t, a separately 
 
         # 3. Show the graph window
         self.show()
