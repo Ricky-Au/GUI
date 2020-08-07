@@ -1,6 +1,7 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -9,9 +10,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.label = QtWidgets.QLabel()
         canvas = QtGui.QPixmap(800, 400)
+        self.pts = [[80, 55], [90, 90], [280, 300], [430, 220], [580, 200], [680, 300], [780, 55]]
         self.label.setPixmap(canvas)
         self.setCentralWidget(self.label)
         self.draw_graph()
+    # convert to PolygonF
+    def poly(self, pts):
+        return QPolygonF(map(lambda p: QPointF(*p), pts))
 
     def draw_graph(self):
         painter = QtGui.QPainter(self.label.pixmap())
@@ -25,7 +30,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # draw y axis
         painter.drawLine(50, 10, 50, 350)
 
-        # draw opacity tick marker
+        # draw opacity tick marker for x axis
         tick = QtGui.QPen()
         tick.setColor(QtGui.QColor('white'))
         painter.setPen(tick)
@@ -56,6 +61,14 @@ class MainWindow(QtWidgets.QMainWindow):
         painter.drawText(250, 360, '-40')
         painter.drawText(150, 360, '-50')
         painter.drawText(50, 360, '-60')
+
+        # polyline test
+        # pts = [[80, 490], [180, 0], [280, 0], [430, 0], [580, 0], [680, 0], [780, 0]]
+        pts = self.pts[:]
+        points = QtGui.QPen()
+        points.setColor(QtGui.QColor('blue'))
+        painter.setPen(points)
+        painter.drawPolyline(self.poly(pts))
 
 
         painter.end()
