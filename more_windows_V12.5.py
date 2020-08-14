@@ -254,15 +254,85 @@ class MainWindow(QWidget):
     def show_plt(self):
         self.pltController = Plt_Controller()
         self.pltController.show()
-
-class Plt_Controller(QtWidgets.QMainWindow):
+class Plt_Controller(QWidget):
     def __init__(self):
         super(Plt_Controller,self).__init__()
-        self.label = QtWidgets.QLabel()
-        canvas = QtGui.QPixmap(800, 400)
-        # self.pts = [[80, 55], [90, 90], [280, 300], [430, 220], [580, 200], [680, 300], [780, 55]]
-        self.label.setPixmap(canvas)
-        self.setCentralWidget(self.label)
+        self.show_pltController()
+        self.show_plt_window()
+
+    def show_pltController(self):
+        QWidget.__init__(self)
+        self.setGeometry(700, 300, 350, 350)
+        self.setWindowTitle('Plot controller title check')
+
+        layout = QGridLayout()
+
+        QToolTip.setFont(QFont('SansSerif', 10))
+
+
+        # line input that only allows for integer inputs 
+        self.line_edit = QLineEdit() 
+        self.onlyInt = QIntValidator()
+        self.line_edit.setValidator(self.onlyInt)
+        self.line_edit.setToolTip('Input number you want to start incrementor at')
+        layout.addWidget(self.line_edit)
+        
+        # pushbutton to save number typed into line
+        self.lbtn = QPushButton('save inputed number', self)
+        self.lbtn.clicked.connect(self.on_click_input)
+        layout.addWidget(self.lbtn)  
+
+        # self.textfilebtn = QPushButton('make text file of inputs', self)
+        # self.textfilebtn.clicked.connect(lambda: self.on_click_new_txt_file())
+        # layout.addWidget(self.textfilebtn)
+
+        # # pushbutton that shows what our values for our plot is
+        # self.vbtn = QPushButton('preview inputed values', self)
+        # self.vbtn.clicked.connect(self.show_preview)
+        # layout.addWidget(self.vbtn)
+
+        # set all the buttons in a nice layout
+        self.setLayout(layout)
+
+    # function that takes in the line input
+    def on_click_input(self):
+        global plot_num
+        global plot_val
+        global time_of_input
+
+        current_time = datetime.datetime.now()
+        print(current_time)
+        time_of_input.append(current_time)
+        print(time_of_input)
+        # case where nothing is typed into the line but user still presses the button
+        # treat as if user types 0
+        if (self.line_edit.text() == ''):
+            plot_num.append(0)
+            print(plot_num)
+            plot_val = int(self.line_edit.text())
+        # case where user does type store the number
+        else:
+            plot_num.append(int(self.line_edit.text()))
+            print(plot_num)
+            plot_val = int(self.line_edit.text())
+
+    def show_plt_window(self):
+        self.pWindow = Plt_Window()
+        self.pWindow.show()
+
+    # @pyqtSlot()
+    # def on_click_new_txt_file(self):
+    #     global plot_num
+    #     global time_of_input
+    #     file = open("graph_inputs.txt", "w")
+    #     for value,time in zip(plot_num,time_of_input):
+    #         file.write("%s  %s \n" % (value,time))
+    #     print("graph input file made")
+    #     file.close()
+
+class Plt_Window(QtWidgets.QMainWindow):
+    def __init__(self):
+        super(Plt_Window,self).__init__()
         self.draw_graph()
     
     # convert to PolygonF
@@ -270,6 +340,13 @@ class Plt_Controller(QtWidgets.QMainWindow):
         return QPolygonF(map(lambda p: QPointF(*p), pts))
 
     def draw_graph(self):
+        self.label = QtWidgets.QLabel()
+        canvas = QtGui.QPixmap(800, 400)
+        # self.pts = [[80, 55], [90, 90], [280, 300], [430, 220], [580, 200], [680, 300], [780, 55]]
+        self.pts = [[80, 55], [90, 90]]
+        self.label.setPixmap(canvas)
+        self.setCentralWidget(self.label)
+    
         painter = QtGui.QPainter(self.label.pixmap())
         # initialize instance of pen for axis
         axis = QtGui.QPen()

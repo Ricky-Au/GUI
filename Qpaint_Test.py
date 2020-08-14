@@ -2,23 +2,40 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-
+from time import sleep
+x1 = 600
+x2 = 650
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-
-        self.label = QtWidgets.QLabel()
-        canvas = QtGui.QPixmap(800, 400)
-        self.pts = [[80, 55], [90, 90], [280, 300], [430, 220], [580, 200], [680, 300], [780, 55]]
-        self.label.setPixmap(canvas)
-        self.setCentralWidget(self.label)
         self.draw_graph()
+
     # convert to PolygonF
     def poly(self, pts):
         return QPolygonF(map(lambda p: QPointF(*p), pts))
+    
+    def update_plot(self):
+        print("in update_plot")
+        global x1
+        global x2
+        sleep(1)
+        x1 = x1 - 50
+        x2 = x2 - 50 
+        self.draw_graph()
 
     def draw_graph(self):
+        global x1
+        global x2
+        self.label = QtWidgets.QLabel()
+        canvas = QtGui.QPixmap(800, 400)
+        p1 = [x1, 55]
+        p2 = [x2, 90]
+        self.pts = [p1, p2]
+        # self.pts = [[80, 55], [90, 90], [280, 300], [430, 220], [580, 200], [680, 300], [780, 55]]
+        self.label.setPixmap(canvas)
+        self.setCentralWidget(self.label)
+
         painter = QtGui.QPainter(self.label.pixmap())
         # initialize instance of pen for axis
         axis = QtGui.QPen()
@@ -62,15 +79,31 @@ class MainWindow(QtWidgets.QMainWindow):
         painter.drawText(150, 360, '-50')
         painter.drawText(50, 360, '-60')
 
-        # polyline test
-        # pts = [[80, 490], [180, 0], [280, 0], [430, 0], [580, 0], [680, 0], [780, 0]]
+
         pts = self.pts[:]
         points = QtGui.QPen()
         points.setColor(QtGui.QColor('blue'))
         painter.setPen(points)
         painter.drawPolyline(self.poly(pts))
 
+        # while True:
+        #     print("in loop")
+        #     # polyline test
+        #     x1 = x1 - 50
+        #     x2 = x2 - 50 
+        #     sleep(1)
+        #     pts = self.pts[:]
+        #     painter.drawPolyline(self.poly(pts))
+            
 
+
+        # # polyline test
+        # pts = self.pts[:]
+        # points = QtGui.QPen()
+        # points.setColor(QtGui.QColor('blue'))
+        # painter.setPen(points)
+        # painter.drawPolyline(self.poly(pts))
+        self.update_plot()
         painter.end()
 
 
